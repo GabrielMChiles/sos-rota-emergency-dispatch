@@ -141,8 +141,33 @@ public class FormularioOcorrenciaView {
 
         Button btnSalvar = new Button("LOCALIZAR AMBULÂNCIA");
         btnSalvar.setFont(FONTE_BOTAO2);
-        btnSalvar.setStyle("-fx-background-color: " + HEX_VERMELHO + "; -fx-text-fill: white; -fx-border-radius: 6; -fx-cursor: hand; -fx-font-weight: bold;");
         btnSalvar.setPrefHeight(50);
+
+        // Define o estilo BASE (Normal)
+        String estiloNormal = "-fx-background-color: " + HEX_VERMELHO + "; " +
+                "-fx-text-fill: white; " +
+                "-fx-background-radius: 5; " +
+                "-fx-cursor: hand; " +
+                "-fx-font-family: 'Poppins'; " + // Força a fonte no CSS também por segurança
+                "-fx-font-weight: bold; " +
+                "-fx-font-size: 18px;"; // Tamanho da FONTE_BOTAO2
+
+        // Define o estilo HOVER (Mouse em cima) - Apenas muda a cor de fundo
+        String estiloHover = "-fx-background-color: #B91C1C; " + // Um vermelho mais escuro
+                "-fx-text-fill: white; " +
+                "-fx-background-radius: 5; " +
+                "-fx-cursor: hand; " +
+                "-fx-font-family: 'Poppins'; " +
+                "-fx-font-weight: bold; " +
+                "-fx-font-size: 18px;";
+
+        // Aplica o normal inicialmente
+        btnSalvar.setStyle(estiloNormal);
+
+        // Adiciona os Listeners para trocar o estilo SEM perder a fonte
+        btnSalvar.setOnMouseEntered(e -> btnSalvar.setStyle(estiloHover));
+        btnSalvar.setOnMouseExited(e -> btnSalvar.setStyle(estiloNormal));
+
 
         btnSalvar.setOnAction(e -> {
             // Pega a janela atual para ser dona do modal

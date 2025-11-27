@@ -104,6 +104,13 @@ public class TelaCadastro {
         // Ação de Voltar
         linkLogin.setOnAction(e -> {
             stage.setScene(telaLogin.criarCena(stage));
+
+            // 2. Hack do Toggle para garantir tela cheia
+            stage.setMaximized(false);
+            stage.setMaximized(true);
+            stage.centerOnScreen();
+
+
         });
 
         // Espaçador

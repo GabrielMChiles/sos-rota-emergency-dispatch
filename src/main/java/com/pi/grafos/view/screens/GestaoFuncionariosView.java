@@ -125,7 +125,7 @@ public class GestaoFuncionariosView {
 
         // Campo Nome
         TextField txtNome = new TextField();
-        txtNome.setPromptText("Nome Completo");
+        txtNome.setPromptText("Fulano Ciclano da Silva");
         if(funcionarioParaEditar != null) txtNome.setText(funcionarioParaEditar.nome);
         VBox boxNome = criarCampoInput("Nome Completo", txtNome);
 
@@ -136,12 +136,49 @@ public class GestaoFuncionariosView {
         if(funcionarioParaEditar != null) comboCargo.setValue(funcionarioParaEditar.cargo);
         VBox boxCargo = criarCampoInput("Cargo / Função", comboCargo);
 
-        // Botão Salvar
+        // Campo email
+        TextField txtEmail = new TextField();
+        txtEmail.setPromptText("fulano123@gmail.com");
+        if(funcionarioParaEditar != null) txtEmail.setText(funcionarioParaEditar.nome);
+        VBox boxEmail = criarCampoInput("Endereço de e-mail", txtEmail);
+
+        // Campo contato
+        TextField txtContato = new TextField();
+        txtContato.setPromptText("62911223344");
+        if(funcionarioParaEditar != null) txtContato.setText(funcionarioParaEditar.nome);
+        VBox boxContato = criarCampoInput("Telefone para contato", txtContato);
+
+        // Botão Salvar (Bug Corrigido)
         Button btnSalvar = new Button(funcionarioParaEditar == null ? "SALVAR CADASTRO" : "ATUALIZAR DADOS");
-        btnSalvar.setFont(FONTE_BOTAO2);
+        btnSalvar.setFont(FONTE_BOTAO2); // Define a fonte (Poppins)
         btnSalvar.setPrefHeight(45);
         btnSalvar.setMaxWidth(Double.MAX_VALUE);
-        btnSalvar.setStyle("-fx-background-color: " + HEX_VERMELHO + "; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-font-weight: bold;");
+
+        // Define o estilo BASE (Normal)
+        String estiloNormal = "-fx-background-color: " + HEX_VERMELHO + "; " +
+                "-fx-text-fill: white; " +
+                "-fx-background-radius: 5; " +
+                "-fx-cursor: hand; " +
+                "-fx-font-family: 'Poppins'; " + // Força a fonte no CSS também por segurança
+                "-fx-font-weight: bold; " +
+                "-fx-font-size: 18px;"; // Tamanho da FONTE_BOTAO2
+
+        // Define o estilo HOVER (Mouse em cima) - Apenas muda a cor de fundo
+        String estiloHover = "-fx-background-color: #B91C1C; " + // Um vermelho mais escuro
+                "-fx-text-fill: white; " +
+                "-fx-background-radius: 5; " +
+                "-fx-cursor: hand; " +
+                "-fx-font-family: 'Poppins'; " +
+                "-fx-font-weight: bold; " +
+                "-fx-font-size: 18px;";
+
+        // Aplica o normal inicialmente
+        btnSalvar.setStyle(estiloNormal);
+
+        // Adiciona os Listeners para trocar o estilo SEM perder a fonte
+        btnSalvar.setOnMouseEntered(e -> btnSalvar.setStyle(estiloHover));
+        btnSalvar.setOnMouseExited(e -> btnSalvar.setStyle(estiloNormal));
+
 
         btnSalvar.setOnAction(e -> {
             System.out.println("Salvando: " + txtNome.getText() + " - " + comboCargo.getValue());
@@ -151,7 +188,7 @@ public class GestaoFuncionariosView {
             btnSalvar.setStyle("-fx-background-color: #10B981; -fx-text-fill: white; -fx-background-radius: 5;");
         });
 
-        formCard.getChildren().addAll(lblAcao, boxNome, boxCargo, btnSalvar);
+        formCard.getChildren().addAll(lblAcao, boxNome, boxCargo, boxEmail, boxContato, btnSalvar);
         contentArea.getChildren().add(formCard);
     }
 

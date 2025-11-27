@@ -1,26 +1,25 @@
 package com.pi.grafos.view.screens;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.pi.grafos.controller.MainController;
-import static com.pi.grafos.view.styles.AppStyles.COR_AZUL_NOTURNO;
-import static com.pi.grafos.view.styles.AppStyles.COR_TEXTO_PRETO;
-import static com.pi.grafos.view.styles.AppStyles.FONTE_BOTAO;
-import static com.pi.grafos.view.styles.AppStyles.FONTE_PEQUENA;
-import static com.pi.grafos.view.styles.AppStyles.FONTE_SUBTITULO;
-import static com.pi.grafos.view.styles.AppStyles.FONTE_TITULO; // Usar PasswordField para senhas
-import static com.pi.grafos.view.styles.AppStyles.HEX_VERMELHO;
+// import com.pi.grafos.view.screens.TelaCadastro.*; // Import desnecessário se estiver no mesmo pacote
 
-import javafx.geometry.Insets; // Para carregar a imagem
-import javafx.geometry.Pos; // Para exibir a imagem
-import javafx.scene.Scene; // Para dividir em duas colunas (Login e Imagem)
+import static com.pi.grafos.view.styles.AppStyles.*;
+
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink; // Import restaurado
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField; // Para empilhar elementos na coluna de login
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -30,16 +29,23 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
-
 @Component
 public class TelaLogin {
 
     @Autowired
     private MainController controller;
 
+    @Autowired
+    @Lazy // Evita ciclo de dependência com o Dashboard
+    private TelaDashboard telaDashboard;
+
+    @Autowired
+    @Lazy // Evita ciclo de dependência com o Cadastro
+    private TelaCadastro telaCadastro;
+
     public Scene criarCena(Stage stage) {
 
-        // --- 1. PAINEL PRINCIPAL ---
+        // --- 1. PAINEL PRINCIPAL (Esquerdo) ---
         VBox loginPanel = new VBox(20);
         loginPanel.setPadding(new Insets(40));
         loginPanel.setAlignment(Pos.CENTER);
@@ -48,11 +54,12 @@ public class TelaLogin {
         // --- BLOCO 1: LOGO E TÍTULO ---
         ImageView logoView = new ImageView();
         try {
+            // Certifique-se que o caminho da imagem está correto em src/main/resources
             Image logoImage = new Image(getClass().getResourceAsStream("/images/logo.png"));
             logoView.setImage(logoImage);
             logoView.setFitWidth(150);
             logoView.setPreserveRatio(true);
-        } catch (Exception e) { }
+        } catch (Exception e) { /* Log erro se necessário */ }
 
         Label lblLogin = new Label("Login");
         lblLogin.setFont(FONTE_TITULO);
@@ -87,44 +94,58 @@ public class TelaLogin {
 
         formContainer.getChildren().addAll(lblEmail, txtEmail, lblPassword, txtPassword, lblMensagemErro);
 
-        // --- BLOCO 3: AÇÕES ---
+        // --- BLOCO 3: AÇÕES (Botão Logar + Link Cadastro) ---
 
+        // Botão Logar
         Button btnLogar = new Button("Log In");
         btnLogar.setFont(FONTE_BOTAO);
         btnLogar.setPrefHeight(45);
         btnLogar.setMaxWidth(Double.MAX_VALUE);
-        btnLogar.setPrefWidth(50); 
         btnLogar.setStyle(
                 "-fx-background-color: " + HEX_VERMELHO + "; " +
                         "-fx-text-fill: white; " +
-                        "-fx-background-radius: 40; " +
-                        "-fx-cursor: hand;" +
-                        "-fx-border-radius: 40;"
+                        "-fx-background-radius: 4; " + // Voltamos para 4 (Consistência visual)
+                        "-fx-cursor: hand;"
         );
 
-        // Selecionando a fonte
-        // 2. Ajuste de altura
-        // 3. CSS
-        Button btnCadastrar = new Button("Cadastrar");
-        btnCadastrar.setFont(FONTE_BOTAO);
-        btnCadastrar.setPrefHeight(45);
-        btnCadastrar.setMaxWidth(Double.MAX_VALUE);
-        btnCadastrar.setPrefWidth(50); 
-        btnCadastrar.setStyle(
-                "-fx-background-color: " + HEX_VERMELHO + "; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-background-radius: 40; " +
-                        "-fx-cursor: hand;" +
-                        "-fx-border-radius: 40;"
-        );
+        // --- HIPERLINK PARA CADASTRO (Restaurado) ---
+        Hyperlink linkCadastro = new Hyperlink("Não tem uma conta? Registre-se agora");
+        linkCadastro.setFont(FONTE_PEQUENA);
+        // Usamos vermelho para chamar atenção, ou pode ser azul/cinza conforme preferir
+        linkCadastro.setTextFill(COR_AZUL_NOTURNO);
+        linkCadastro.setBorder(Border.EMPTY);
+        linkCadastro.setStyle("-fx-underline: false; -fx-cursor: hand;");
 
-        // AÇÃO DE NAVEGAÇÃO
-        //linkCadastro.setOnAction(e -> {
-            // Troca a cena atual pela cena de cadastro
-        //    stage.setScene(telaCadastro.criarCena(stage));
-        //});
+        // Efeito visual no hover
+        linkCadastro.setOnMouseEntered(e -> linkCadastro.setStyle("-fx-underline: true; -fx-cursor: hand;"));
+        linkCadastro.setOnMouseExited(e -> linkCadastro.setStyle("-fx-underline: false; -fx-cursor: hand;"));
 
-        // Espaçador
+        // Ação de Navegação Inteligente (Preserva tamanho da janela)
+        linkCadastro.setOnAction(e -> {
+            // 1. Captura estado da janela
+//            boolean estavaMaximized = stage.isMaximized();
+//            double w = stage.getWidth();
+//            double h = stage.getHeight();
+//
+//            // 2. Troca a cena para a Tela de Cadastro
+//            stage.setScene(telaCadastro.criarCena(stage));
+//
+//            // 3. Restaura estado
+//            if (estavaMaximized) stage.setMaximized(true);
+//            else { stage.setWidth(w); stage.setHeight(h); }
+
+
+
+            stage.setScene(telaCadastro.criarCena(stage));
+
+            // 2. Hack do Toggle para garantir tela cheia
+            stage.setMaximized(false);
+            stage.setMaximized(true);
+            stage.centerOnScreen();
+
+        });
+
+        // Espaçador para o rodapé
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
@@ -132,24 +153,24 @@ public class TelaLogin {
         lblCopyright.setFont(Font.font("Poppins", FontWeight.NORMAL, 10));
         lblCopyright.setTextFill(Color.web("#999999"));
 
-        // --- MONTAGEM ---
+        // --- MONTAGEM DO PAINEL ESQUERDO ---
         loginPanel.getChildren().addAll(
                 logoView,
                 lblLogin,
                 formContainer,
-                btnCadastrar,
-                btnLogar,
-                //linkCadastro, // Adicionado aqui!
+                btnLogar,      // Botão principal
+                linkCadastro,  // Link secundário (Restaurado)
                 spacer,
                 lblCopyright
         );
 
-        // --- LADO DIREITO (Imagem) ---
+        // --- 2. PAINEL DIREITO (Imagem) ---
         Region backgroundRegion = new Region();
         try {
+            // Tenta carregar imagem local
             Image imgBackground = new Image(getClass().getResourceAsStream("/images/ambulancias.jpeg"));
             javafx.scene.layout.BackgroundSize bgSize = new javafx.scene.layout.BackgroundSize(
-                    1.0, 1.0, true, true, false, true
+                    1.0, 1.0, true, true, false, true // Cover mode
             );
             javafx.scene.layout.BackgroundImage bgImage = new javafx.scene.layout.BackgroundImage(
                     imgBackground,
@@ -160,50 +181,66 @@ public class TelaLogin {
             );
             backgroundRegion.setBackground(new javafx.scene.layout.Background(bgImage));
         } catch (Exception e) {
+            // Fallback cor sólida
             backgroundRegion.setStyle("-fx-background-color: #1E293B;");
         }
 
-        // --- 3. PAINEL PRINCIPAL: HBox (Login + Imagem) ---
+        // --- 3. MONTAGEM FINAL DA CENA ---
         HBox root = new HBox();
         root.getChildren().addAll(loginPanel, backgroundRegion);
+
         HBox.setHgrow(loginPanel, Priority.ALWAYS);
         HBox.setHgrow(backgroundRegion, Priority.ALWAYS);
+
+        // Limites para não esticar demais o login
         loginPanel.setMaxWidth(500);
         loginPanel.setMinWidth(400);
 
-        
-
-        btnCadastrar.setOnAction(event -> {
-            String nomeUsuario = txtEmail.getText();
-            String senhaUsuario = txtPassword.getText();
-
-            if (!(nomeUsuario.equals("") || senhaUsuario.equals(""))) {
-                lblMensagemErro.setText("Validando Cadastro");
-                lblMensagemErro.setTextFill(Color.GREEN);
-
-                controller.cadastrarUsuario(nomeUsuario, senhaUsuario);
-                
-            } else {
-                lblMensagemErro.setText("Verifique os dados cadastrados ou faça cadastro.");
-                lblMensagemErro.setTextFill(Color.RED);
-            }
-        });
-
+        // --- LÓGICA DE LOGIN ---
         btnLogar.setOnAction(event -> {
             String nomeUsuario = txtEmail.getText();
             String senhaUsuario = txtPassword.getText();
 
-            if (!(nomeUsuario.equals("") || senhaUsuario.equals(""))) {
-                lblMensagemErro.setText("Validando Cadastro");
-                lblMensagemErro.setTextFill(Color.GREEN);
-
-                controller.logar(nomeUsuario, senhaUsuario);
-                lblMensagemErro.setText("Usuário logado, redirecionando!.");
-                
-            } else {
-                lblMensagemErro.setText("Verifique os dados cadastrados ou faça cadastro.");
+            if (nomeUsuario.isEmpty() || senhaUsuario.isEmpty()) {
+                lblMensagemErro.setText("Preencha todos os campos.");
                 lblMensagemErro.setTextFill(Color.RED);
+                return;
             }
+
+            try {
+                // Chama o controller para verificar login
+                boolean loginSucesso = controller.logar(nomeUsuario, senhaUsuario);
+
+                if (loginSucesso) {
+                    lblMensagemErro.setText("Login autorizado! Carregando...");
+                    lblMensagemErro.setTextFill(Color.GREEN);
+
+                    // --- TROCA DE TELA PARA DASHBOARD ---
+                    // 1. Troca a cena
+//                    stage.setScene(telaDashboard.criarCena(stage));
+//
+//                    // 2. Hack do Toggle para garantir tela cheia
+//                    stage.setMaximized(false);
+//                    stage.setMaximized(true);
+//                    stage.centerOnScreen();
+
+                } else {
+                    lblMensagemErro.setText("Usuário ou senha inválidos.");
+                    lblMensagemErro.setTextFill(Color.RED);
+                }
+            } catch (Exception e) {
+                lblMensagemErro.setText("Erro de conexão: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+
+            // PARA TESTE!!! CHAMA A TELA IDEPENDENTE DO CADASTRO
+            stage.setScene(telaDashboard.criarCena(stage));
+
+            // 2. Hack do Toggle para garantir tela cheia
+            stage.setMaximized(false);
+            stage.setMaximized(true);
+            stage.centerOnScreen();
         });
 
         return new Scene(root, 1000, 700);

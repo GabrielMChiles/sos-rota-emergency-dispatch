@@ -60,12 +60,12 @@ public class MainController {
         }
     }
 
-    public void logar(String NomeUsuario, String SenhaUsuario){
+    public boolean logar(String NomeUsuario, String SenhaUsuario){
         try {
 
             if((NomeUsuario.isEmpty() || SenhaUsuario.isEmpty()) == true){
                 System.err.println("Erro de cadastro, verifique os campos");
-                return;
+                return false;
             } 
             
             if(authService.autenticar(NomeUsuario, SenhaUsuario)){
@@ -91,5 +91,6 @@ public class MainController {
             System.err.println("Erro ao carregar a tela do Dashboard!");
             e.printStackTrace();
         }
+        return false;
     }
 }

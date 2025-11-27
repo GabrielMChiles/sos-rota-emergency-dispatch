@@ -159,14 +159,20 @@ public class TelaDashboard {
         VBox listaContainer = new VBox(10);
 
         // Adicionando ocorrências na força bruta para visualizacao
-        listaContainer.getChildren().add(criarCardOcorrencia("Acidente Centro", "Alta Prioridade", HEX_VERMELHO));
-        listaContainer.getChildren().add(criarCardOcorrencia("Mal Súbito - Jd. América", "Média Prioridade", "#F59E0B"));
-        listaContainer.getChildren().add(criarCardOcorrencia("Transporte Eletivo", "Baixa Prioridade", "#10B981"));
-        listaContainer.getChildren().add(criarCardOcorrencia("Colisão Leve", "Baixa Prioridade", "#10B981"));
-        listaContainer.getChildren().add(criarCardOcorrencia("Mal Súbito - Jd. América", "Média Prioridade", "#F59E0B"));
-        listaContainer.getChildren().add(criarCardOcorrencia("Transporte Eletivo", "Baixa Prioridade", "#10B981"));
-        listaContainer.getChildren().add(criarCardOcorrencia("Colisão Leve", "Baixa Prioridade", "#10B981"));
+        // Exemplo 1: Acidente Grave
+        listaContainer.getChildren().add(
+                criarCardOcorrencia("Acidente Centro", "Alta Prioridade - Requer UTI", HEX_VERMELHO, "Centro", "ALTA")
+        );
 
+        // Exemplo 2: Mal Súbito
+        listaContainer.getChildren().add(
+                criarCardOcorrencia("Mal Súbito", "Média Prioridade - Jd. América", "#F59E0B", "Jardim América", "MÉDIA")
+        );
+
+        // Exemplo 3: Transporte
+        listaContainer.getChildren().add(
+                criarCardOcorrencia("Transporte Eletivo", "Baixa Prioridade - Vila Nova", "#10B981", "Vila Nova", "BAIXA")
+        );
 
         ScrollPane scrollPane = new ScrollPane(listaContainer);
         scrollPane.setFitToWidth(true);
@@ -356,27 +362,71 @@ public class TelaDashboard {
     /**
      * Cria um quadrado visual para representar uma ocorrência na lista
      */
-    private HBox criarCardOcorrencia(String titulo, String subtitulo, String corStatus) {
+    /**
+     * Cria um card interativo. Ao clicar, abre o despacho.
+     */
+    private HBox criarCardOcorrencia(String titulo, String subtitulo, String corStatus, String bairro, String gravidade) {
         HBox card = new HBox(10);
-        card.setPadding(new Insets(10));
-        card.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 6; -fx-background-radius: 6;");
+        card.setPadding(new Insets(15)); // Aumentei um pouco o padding para ficar clicável
         card.setAlignment(Pos.CENTER_LEFT);
 
+        // --- ESTILOS VISUAIS (Blindagem contra o bug do Hover) ---
+        // Definimos o estilo COMPLETO para os dois estados
+        String estiloNormal =
+                "-fx-background-color: white; " +
+                        "-fx-border-color: #E2E8F0; " +
+                        "-fx-border-radius: 8; " +
+                        "-fx-background-radius: 8; " +
+                        "-fx-cursor: hand;"; // Mãozinha para indicar que é clicável
+
+        String estiloHover =
+                "-fx-background-color: #F1F5F9; " + // Cinza bem claro no hover
+                        "-fx-border-color: " + corStatus + "; " + // Borda fica da cor da gravidade! (UX Top)
+                        "-fx-border-radius: 8; " +
+                        "-fx-background-radius: 8; " +
+                        "-fx-cursor: hand;";
+
+        // Aplica o estilo inicial
+        card.setStyle(estiloNormal);
+
+        // --- LÓGICA DE INTERAÇÃO ---
+
+        // 1. Efeito Hover (Muda cor de fundo e borda)
+        card.setOnMouseEntered(e -> card.setStyle(estiloHover));
+        card.setOnMouseExited(e -> card.setStyle(estiloNormal));
+
+        // 2. Ação de Clique (O Pulo do Gato 🐱)
+        card.setOnMouseClicked(e -> {
+            System.out.println("Abrindo despacho rápido para: " + titulo);
+
+            // Truque para pegar o Stage atual a partir do componente
+            Stage stageAtual = (Stage) card.getScene().getWindow();
+
+            // Abre o Modal de Seleção (Aquele que criamos antes)
+            new ModalSelecaoAmbulancia().exibir(stageAtual, bairro, gravidade);
+        });
+
+        // --- CONTEÚDO DO CARD ---
         Circle statusDot = new Circle(5, Color.web(corStatus));
 
-        VBox textos = new VBox(2);
+        VBox textos = new VBox(4); // Espaçamento entre título e subtítulo
+
         Label lblTit = new Label(titulo);
-        // Usando fonte do corpo para o card ficar mais limpo
         lblTit.setFont(FONTE_CORPO);
-        lblTit.setStyle("-fx-font-weight: bold; -fx-text-fill: #1E293B;");
+        lblTit.setStyle("-fx-font-weight: bold; -fx-text-fill: #1E293B;"); // Força cor escura
 
         Label lblSub = new Label(subtitulo);
         lblSub.setFont(FONTE_PEQUENA);
-        lblSub.setTextFill(Color.web(corStatus));
+        lblSub.setTextFill(Color.web(corStatus)); // Cor do status (Vermelho/Laranja/Verde)
 
         textos.getChildren().addAll(lblTit, lblSub);
 
         card.getChildren().addAll(statusDot, textos);
+
+        // Garante que o card ocupe a largura disponível
+        HBox.setHgrow(textos, Priority.ALWAYS);
+        card.setMaxWidth(Double.MAX_VALUE);
+
         return card;
     }
 }
