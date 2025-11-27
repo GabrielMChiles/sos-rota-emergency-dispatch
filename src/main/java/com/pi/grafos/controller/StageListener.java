@@ -29,13 +29,12 @@ public class StageListener implements ApplicationListener<StageReadyEvent> {
 
         // -- AQUI é onde eu seleciono a tela que quero chamar inicialmente
         Scene scene = telaLogin.criarCena(stage);
-        //Scene scene = new TelaDashboard().criarCena(stage);
 
         stage.setScene(scene);
         stage.setTitle(this.applicationTitle);
 
-        stage.setMaximized(true); // Faz abrir ocupando a tela toda COM a barra do Windows
-        //stage.setFullScreen(true); // Se quiser tela cheia (F11, sem o X de fechar)
+        stage.setMaximized(true); 
+        //stage.setFullScreen(true);
 
         // Define um tamanho mínimo para não quebrar o layout se o usuário tentar diminuir muito
         stage.setMinWidth(800);

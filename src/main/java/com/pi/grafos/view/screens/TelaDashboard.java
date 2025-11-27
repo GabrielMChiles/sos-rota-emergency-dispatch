@@ -1,5 +1,23 @@
 package com.pi.grafos.view.screens;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import static com.pi.grafos.view.styles.AppStyles.COR_AZUL_NOTURNO;
+import static com.pi.grafos.view.styles.AppStyles.COR_TEXTO_BRANCO;
+import static com.pi.grafos.view.styles.AppStyles.COR_TEXTO_CLARO;
+import static com.pi.grafos.view.styles.AppStyles.FONTE_BOTAO2;
+import static com.pi.grafos.view.styles.AppStyles.FONTE_CORPO;
+import static com.pi.grafos.view.styles.AppStyles.FONTE_PEQUENA;
+import static com.pi.grafos.view.styles.AppStyles.FONTE_SUBTITULO;
+import static com.pi.grafos.view.styles.AppStyles.FONTE_TITULO;
+import static com.pi.grafos.view.styles.AppStyles.HEX_CINZA_FUNDO;
+import static com.pi.grafos.view.styles.AppStyles.HEX_SIDEBAR_BG;
+import static com.pi.grafos.view.styles.AppStyles.HEX_SIDEBAR_HOVER;
+import static com.pi.grafos.view.styles.AppStyles.HEX_VERMELHO;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -9,7 +27,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
@@ -17,15 +43,12 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.pi.grafos.view.styles.AppStyles.*;
 
 @Component
 public class TelaDashboard {
+
+
+
 
     // --- CONFIGURAÇÕES VISUAIS ---
     private static final double LARGURA_SIDEBAR = 240;

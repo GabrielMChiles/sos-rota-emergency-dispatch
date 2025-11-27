@@ -9,16 +9,16 @@ import static com.pi.grafos.view.styles.AppStyles.COR_TEXTO_PRETO;
 import static com.pi.grafos.view.styles.AppStyles.FONTE_BOTAO;
 import static com.pi.grafos.view.styles.AppStyles.FONTE_PEQUENA;
 import static com.pi.grafos.view.styles.AppStyles.FONTE_SUBTITULO;
-import static com.pi.grafos.view.styles.AppStyles.FONTE_TITULO; // Usar PasswordField para senhas
-import static com.pi.grafos.view.styles.AppStyles.HEX_VERMELHO;
+import static com.pi.grafos.view.styles.AppStyles.FONTE_TITULO;
+import static com.pi.grafos.view.styles.AppStyles.HEX_VERMELHO; // Usar PasswordField para senhas
 
-import javafx.geometry.Insets; // Para carregar a imagem
-import javafx.geometry.Pos; // Para exibir a imagem
-import javafx.scene.Scene; // Para dividir em duas colunas (Login e Imagem)
-import javafx.scene.control.Button;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos; // Para carregar a imagem
+import javafx.scene.Scene; // Para exibir a imagem
+import javafx.scene.control.Button; // Para dividir em duas colunas (Login e Imagem)
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField; // Para empilhar elementos na coluna de login
-import javafx.scene.control.TextField;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField; // Para empilhar elementos na coluna de login
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -31,14 +31,16 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 
+
 @Component
 public class TelaLogin {
+
 
     @Autowired
     private MainController controller;
 
     public Scene criarCena(Stage stage) {
-
+        
         // --- 1. PAINEL PRINCIPAL ---
         VBox loginPanel = new VBox(20);
         loginPanel.setPadding(new Insets(40));
@@ -119,9 +121,9 @@ public class TelaLogin {
         );
 
         // AÇÃO DE NAVEGAÇÃO
+        // Troca a cena atual pela cena de cadastro
         //linkCadastro.setOnAction(e -> {
-            // Troca a cena atual pela cena de cadastro
-        //    stage.setScene(telaCadastro.criarCena(stage));
+        //stage.setScene(telaDashboard.criarCena(stage));
         //});
 
         // Espaçador
@@ -139,7 +141,7 @@ public class TelaLogin {
                 formContainer,
                 btnCadastrar,
                 btnLogar,
-                //linkCadastro, // Adicionado aqui!
+                //linkCadastro, 
                 spacer,
                 lblCopyright
         );
@@ -199,6 +201,7 @@ public class TelaLogin {
 
                 controller.logar(nomeUsuario, senhaUsuario);
                 lblMensagemErro.setText("Usuário logado, redirecionando!.");
+
                 
             } else {
                 lblMensagemErro.setText("Verifique os dados cadastrados ou faça cadastro.");

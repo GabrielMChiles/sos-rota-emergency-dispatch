@@ -5,12 +5,8 @@ import org.springframework.stereotype.Component;
 import com.pi.grafos.service.UsuarioService;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 
 
 @Component
@@ -69,19 +65,8 @@ public class MainController {
             } 
             
             if(authService.autenticar(NomeUsuario, SenhaUsuario)){
-                FXMLLoader dashboard = new FXMLLoader(getClass().getResource(("/view/dashboard.fxml")));
-                Parent root = dashboard.load();
-
-                Stage stage = (Stage) cadastrarButton.getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.setTitle("Dashboard");
-                stage.show();
-
-                //Método de passar o nome para frente
-                DashboardController dashboardController = dashboard.getController();
-                dashboardController.setUsername(NomeUsuario);
-
-                System.err.println("Usuário Logado, Redirecionando!");
+                System.err.println("Sucesso!");
+                
             } else{
                 System.err.println("Usuário inexistente, tente fazer um cadastro!");
             }
