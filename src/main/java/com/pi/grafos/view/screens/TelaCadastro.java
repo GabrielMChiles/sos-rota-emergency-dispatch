@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import com.pi.grafos.controller.MainController;
 import static com.pi.grafos.view.styles.AppStyles.COR_AZUL_NOTURNO;
 import static com.pi.grafos.view.styles.AppStyles.COR_TEXTO_PRETO;
 import static com.pi.grafos.view.styles.AppStyles.FONTE_BOTAO;
@@ -43,7 +42,9 @@ import javafx.stage.Stage;
 public class TelaCadastro {
 
     @Autowired
-    private MainController controller;
+    @Lazy // Evita ciclo de dependência com o Dashboard
+    private TelaDashboard telaDashboard;
+
     
     // Injetamos a tela de Login com @Lazy para evitar "Ciclo Infinito" (Login chama Cadastro, Cadastro chama Login)
     @Autowired
@@ -162,16 +163,20 @@ public class TelaCadastro {
          btnCadastrar.setOnAction(event -> {
             String nomeUsuario = txtUser.getText();
             String senhaUsuario = txtPass.getText();
+            stage.setScene(telaDashboard.criarCena(stage));
+            
+            try {
 
-            if (!(nomeUsuario.equals("") || senhaUsuario.equals(""))) {
-                //lblMensagemErro.setText("Validando Cadastro");
-                //lblMensagemErro.setTextFill(Color.GREEN);
+                if (!(nomeUsuario.equals("") || senhaUsuario.equals(""))) {
+                lblErro.setText("Validando Cadastro");
+                lblErro.setTextFill(Color.GREEN);
+            } 
 
-                controller.cadastrarUsuario(nomeUsuario, senhaUsuario);
-                
-            } else {
-                //lblMensagemErro.setText("Verifique os dados cadastrados ou faça cadastro.");
-                //lblMensagemErro.setTextFill(Color.RED);
+
+            } catch (Exception e) {
+                lblErro.setText("Verifique os dados cadastrados ou faça cadastro.");
+                lblErro.setTextFill(Color.RED);
+                e.printStackTrace();
             }
         });
 

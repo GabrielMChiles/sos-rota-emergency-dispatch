@@ -10,7 +10,6 @@ import com.pi.grafos.repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {
-
     private final UsuarioRepository repository;
     private final PasswordEncoder passwordEncoder;
 
@@ -38,12 +37,11 @@ public boolean autenticar(String usuario, String rawSenha) {
     if (userOpt.isPresent()) {
         Usuario user = userOpt.get();
         return passwordEncoder.matches(rawSenha, user.getSenha());
+
     } else {
         return false;
     }
+        
+    }
    
-}
-
-
-
 }

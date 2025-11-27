@@ -24,7 +24,6 @@ public class MainController {
     @FXML
     private TextField senhaUsuario;
 
-    // Construtor da classe MainController, já inicia com a dependencia do usuarioService
     public MainController(UsuarioService authService) {
         this.authService = authService;
     }
@@ -66,6 +65,7 @@ public class MainController {
             
             if(authService.autenticar(NomeUsuario, SenhaUsuario) == true){
                 System.err.println("Usuário Logado, Redirecionando!");
+                return true;
 
             } else{
                 System.err.println("Usuário inexistente, tente fazer um cadastro!");
@@ -76,7 +76,8 @@ public class MainController {
         } catch (Exception e) {
             System.err.println("Erro ao carregar a tela do Dashboard!");
             e.printStackTrace();
+            return false;
         }
-        return false;
+        
     }
 }
