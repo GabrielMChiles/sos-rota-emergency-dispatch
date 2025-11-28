@@ -5,15 +5,19 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.pi.grafos.controller.MainController;
-// import com.pi.grafos.view.screens.TelaCadastro.*; // Import desnecessário se estiver no mesmo pacote
-
-import static com.pi.grafos.view.styles.AppStyles.*;
+import static com.pi.grafos.view.styles.AppStyles.COR_AZUL_NOTURNO;
+import static com.pi.grafos.view.styles.AppStyles.COR_TEXTO_PRETO;
+import static com.pi.grafos.view.styles.AppStyles.FONTE_BOTAO;
+import static com.pi.grafos.view.styles.AppStyles.FONTE_PEQUENA;
+import static com.pi.grafos.view.styles.AppStyles.FONTE_SUBTITULO;
+import static com.pi.grafos.view.styles.AppStyles.FONTE_TITULO; // Import restaurado
+import static com.pi.grafos.view.styles.AppStyles.HEX_VERMELHO;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink; // Import restaurado
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -99,7 +103,6 @@ public class TelaLogin {
         // Botão Logar
         Button btnLogar = new Button("Log In");
         btnLogar.setFont(FONTE_BOTAO);
-        btnLogar.setPrefHeight(45);
         btnLogar.setMaxWidth(Double.MAX_VALUE);
         btnLogar.setStyle(
                 "-fx-background-color: " + HEX_VERMELHO + "; " +
@@ -196,50 +199,26 @@ public class TelaLogin {
         loginPanel.setMaxWidth(500);
         loginPanel.setMinWidth(400);
 
-        // --- LÓGICA DE LOGIN ---
+        //--- LÓGICA DE LOGIN ---
         btnLogar.setOnAction(event -> {
             String nomeUsuario = txtEmail.getText();
             String senhaUsuario = txtPassword.getText();
 
-            if (nomeUsuario.isEmpty() || senhaUsuario.isEmpty()) {
-                lblMensagemErro.setText("Preencha todos os campos.");
-                lblMensagemErro.setTextFill(Color.RED);
-                return;
-            }
-
             try {
-                // Chama o controller para verificar login
                 boolean loginSucesso = controller.logar(nomeUsuario, senhaUsuario);
-
-                if (loginSucesso) {
+                if (loginSucesso == true) {
+                    System.out.println("tentando logar");
                     lblMensagemErro.setText("Login autorizado! Carregando...");
                     lblMensagemErro.setTextFill(Color.GREEN);
+                    stage.setScene(telaDashboard.criarCena(stage));
 
-                    // --- TROCA DE TELA PARA DASHBOARD ---
-                    // 1. Troca a cena
-//                    stage.setScene(telaDashboard.criarCena(stage));
-//
-//                    // 2. Hack do Toggle para garantir tela cheia
-//                    stage.setMaximized(false);
-//                    stage.setMaximized(true);
-//                    stage.centerOnScreen();
-
-                } else {
-                    lblMensagemErro.setText("Usuário ou senha inválidos.");
-                    lblMensagemErro.setTextFill(Color.RED);
                 }
             } catch (Exception e) {
-                lblMensagemErro.setText("Erro de conexão: " + e.getMessage());
+                                    lblMensagemErro.setText("Usuário ou senha inválidos.");
+                    lblMensagemErro.setTextFill(Color.RED);
                 e.printStackTrace();
             }
 
-
-            // PARA TESTE!!! CHAMA A TELA IDEPENDENTE DO CADASTRO
-            stage.setScene(telaDashboard.criarCena(stage));
-
-            // 2. Hack do Toggle para garantir tela cheia
-            stage.setMaximized(false);
-            stage.setMaximized(true);
             stage.centerOnScreen();
         });
 
