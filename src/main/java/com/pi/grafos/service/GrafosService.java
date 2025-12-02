@@ -13,18 +13,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-// Classe que representa uma aresta do grafo
+// Classe que representa uma aresta do grafo, representa o vértice de destino e a distância
 class Aresta {
-    private int destino;
+    private int vizinho;
     private double distancia;
 
     public Aresta(int destino, double distancia) {
-        this.destino = destino;
+        this.vizinho = destino;
         this.distancia = distancia;
     }
 
-    public int getDestino() {
-        return destino;
+    public int getVizinho() {
+        return vizinho;
     }
 
     public double getDistancia() {
@@ -37,8 +37,16 @@ class ConstruirGrafo {
     private Map<Integer, List<Aresta>> caminho = new HashMap<>();
 
     public void addAresta(int origem, int destino, double distancia) {
-        caminho.computeIfAbsent(origem, k -> new ArrayList<>()).add(new Aresta(destino, distancia));
-        caminho.computeIfAbsent(destino, k -> new ArrayList<>()).add(new Aresta(origem, distancia));
+    	
+        if (!caminho.containsKey(origem)) {
+            caminho.put(origem, new ArrayList<Aresta>());
+        }
+        caminho.get(origem).add(new Aresta(destino, distancia));
+
+        if (!caminho.containsKey(destino)) {
+            caminho.put(destino, new ArrayList<Aresta>());
+        }
+        caminho.get(destino).add(new Aresta(origem, distancia));
     }
 
     public Map<Integer, List<Aresta>> getCaminho() {
@@ -51,29 +59,6 @@ public class GrafosService {
 
     @Value("classpath:ruas_conexoes.csv")
     private Resource recurso;
-
-    // Método para carregar grafo a partir do CSV
-    public ConstruirGrafo carregarGrafo() {
-        ConstruirGrafo grafo = new ConstruirGrafo();
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(recurso.getInputStream()))) {
-            br.readLine(); // Ignora cabeçalho
-
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] vet = line.split(",");
-                grafo.addAresta(
-                        Integer.parseInt(vet[1]), // origem
-                        Integer.parseInt(vet[2]), // destino
-                        Double.parseDouble(vet[3]) // distância
-                );
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao ler arquivo CSV", e);
-        }
-
-        return grafo;
-    }
 
     // Dijkstra para menor caminho
     public static List<Integer> menorCaminho(ConstruirGrafo grafo, int origem, int destino) {
@@ -94,7 +79,7 @@ public class GrafosService {
             int atual = (int) fila.poll()[0];
 
             for (Aresta ar : grafo.getCaminho().get(atual)) {
-                int vizinho = ar.getDestino();
+                int vizinho = ar.getVizinho();
                 double novaDist = distancia.get(atual) + ar.getDistancia();
 
                 if (novaDist < distancia.getOrDefault(vizinho, Double.MAX_VALUE)) {
@@ -129,7 +114,7 @@ public class GrafosService {
             int prox = caminho.get(i + 1);
 
             for (Aresta a : g.getCaminho().get(atual)) {
-                if (a.getDestino() == prox) {
+                if (a.getVizinho() == prox) {
                     soma += a.getDistancia();
                     break;
                 }
