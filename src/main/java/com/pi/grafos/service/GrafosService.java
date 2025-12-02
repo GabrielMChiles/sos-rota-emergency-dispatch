@@ -1,6 +1,5 @@
 package com.pi.grafos.service;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -9,117 +8,149 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-
-// Classe que representa uma aresta do grafo, representa o vértice de destino e a distância
-class Aresta {
-    private int vizinho;
-    private double distancia;
-
-    public Aresta(int destino, double distancia) {
-        this.vizinho = destino;
-        this.distancia = distancia;
-    }
-
-    public int getVizinho() {
-        return vizinho;
-    }
-
-    public double getDistancia() {
-        return distancia;
-    }
-}
-
-// Classe que representa o grafo
-class ConstruirGrafo {
-    private Map<Integer, List<Aresta>> caminho = new HashMap<>();
-
-    public void addAresta(int origem, int destino, double distancia) {
-    	
-        if (!caminho.containsKey(origem)) {
-            caminho.put(origem, new ArrayList<Aresta>());
-        }
-        caminho.get(origem).add(new Aresta(destino, distancia));
-
-        if (!caminho.containsKey(destino)) {
-            caminho.put(destino, new ArrayList<Aresta>());
-        }
-        caminho.get(destino).add(new Aresta(origem, distancia));
-    }
-
-    public Map<Integer, List<Aresta>> getCaminho() {
-        return caminho;
-    }
-}
 
 @Service
 public class GrafosService {
 
-    @Value("classpath:ruas_conexoes.csv")
-    private Resource recurso;
+	class Aresta {
+		private int verticeDestino;
+		private double pesoDistancia;
 
-    // Dijkstra para menor caminho
-    public static List<Integer> menorCaminho(ConstruirGrafo grafo, int origem, int destino) {
-        Map<Integer, Double> distancia = new HashMap<>();
-        Map<Integer, Integer> anterior = new HashMap<>();
+		public Aresta(int verticeDestino, double pesoDistancia) {
+			this.verticeDestino = verticeDestino;
+			this.pesoDistancia = pesoDistancia;
+		}
 
-        // Usando PriorityQueue com nós e distância double
-        PriorityQueue<double[]> fila = new PriorityQueue<>(Comparator.comparingDouble(a -> a[1]));
+		public int getVerticeDestino() {
+			return verticeDestino;
+		}
 
-        for (int vertice : grafo.getCaminho().keySet()) {
-            distancia.put(vertice, Double.MAX_VALUE);
-        }
+		public double getPesoDistancia() {
+			return pesoDistancia;
+		}
+	}
 
-        distancia.put(origem, 0.0);
-        fila.add(new double[]{origem, 0.0});
+	public class Grafo {
+		private Map<Integer, List<Aresta>> listaAdjacencia = new HashMap<>();
 
-        while (!fila.isEmpty()) {
-            int atual = (int) fila.poll()[0];
+		public void adicionarAresta(int origem, int destino, double distancia) {
 
-            for (Aresta ar : grafo.getCaminho().get(atual)) {
-                int vizinho = ar.getVizinho();
-                double novaDist = distancia.get(atual) + ar.getDistancia();
+			listaAdjacencia.computeIfAbsent(origem, x -> new ArrayList<>()).add(new Aresta(destino, distancia));
 
-                if (novaDist < distancia.getOrDefault(vizinho, Double.MAX_VALUE)) {
-                    distancia.put(vizinho, novaDist);
-                    anterior.put(vizinho, atual);
-                    fila.add(new double[]{vizinho, novaDist});
-                }
-            }
-        }
+			listaAdjacencia.computeIfAbsent(destino, x -> new ArrayList<>()).add(new Aresta(origem, distancia));
+		}
 
-        // Reconstruindo caminho
-        LinkedList<Integer> caminho = new LinkedList<>();
-        Integer atual = destino;
-        while (atual != null) {
-            caminho.addFirst(atual);
-            atual = anterior.get(atual);
-        }
+		public Map<Integer, List<Aresta>> getListaAdjacencia() {
+			return listaAdjacencia;
+		}
+	}
 
-        // Verifica se o destino é alcançável
-        if (caminho.isEmpty() || caminho.getFirst() != origem) {
-            return new ArrayList<>(); // caminho inexistente
-        }
+	class NoDijkstra {
+		public int vertice;
+		public double distanciaAcumulada;
 
-        return caminho;
-    }
+		public NoDijkstra(int vertice, double distanciaAcumulada) {
+			this.vertice = vertice;
+			this.distanciaAcumulada = distanciaAcumulada;
+		}
+	}
 
-    // Calcula a distância total de um caminho
-    public static double calculaDistanciaTotal(ConstruirGrafo g, List<Integer> caminho) {
-        double soma = 0;
-        for (int i = 0; i < caminho.size() - 1; i++) {
-            int atual = caminho.get(i);
-            int prox = caminho.get(i + 1);
+	public class DijkstraResultado {
+		public Map<Integer, Double> menorDistancia;
+		public Map<Integer, Integer> verticeAnterior;
 
-            for (Aresta a : g.getCaminho().get(atual)) {
-                if (a.getVizinho() == prox) {
-                    soma += a.getDistancia();
-                    break;
-                }
-            }
-        }
-        return soma;
-    }
+		public DijkstraResultado(Map<Integer, Double> menorDistancia, Map<Integer, Integer> verticeAnterior) {
+			this.menorDistancia = menorDistancia;
+			this.verticeAnterior = verticeAnterior;
+		}
+	}
+
+	public class RotaCalculada {
+		public int verticeOrigem;
+		public double distanciaTotal;
+		public List<Integer> caminhoCompleto;
+
+		public RotaCalculada(int verticeOrigem, double distanciaTotal, List<Integer> caminhoCompleto) {
+			this.verticeOrigem = verticeOrigem;
+			this.distanciaTotal = distanciaTotal;
+			this.caminhoCompleto = caminhoCompleto;
+		}
+	}
+
+	public DijkstraResultado executarDijkstra(Grafo grafo, int destino) {
+
+		Map<Integer, Double> menorDistancia = new HashMap<>();
+		Map<Integer, Integer> verticeAnterior = new HashMap<>();
+
+		for (int vertice : grafo.getListaAdjacencia().keySet()) {
+			menorDistancia.put(vertice, Double.MAX_VALUE);
+		}
+
+		menorDistancia.put(destino, 0.0);
+
+		PriorityQueue<NoDijkstra> filaPrioridade = new PriorityQueue<>(
+				Comparator.comparingDouble(no -> no.distanciaAcumulada));
+
+		filaPrioridade.add(new NoDijkstra(destino, 0));
+
+		while (!filaPrioridade.isEmpty()) {
+			NoDijkstra noAtual = filaPrioridade.poll();
+			int verticeAtual = noAtual.vertice;
+
+			for (Aresta aresta : grafo.getListaAdjacencia().get(verticeAtual)) {
+
+				double novaDistancia = menorDistancia.get(verticeAtual) + aresta.getPesoDistancia();
+
+				if (novaDistancia < menorDistancia.get(aresta.getVerticeDestino())) {
+					menorDistancia.put(aresta.getVerticeDestino(), novaDistancia);
+					verticeAnterior.put(aresta.getVerticeDestino(), verticeAtual);
+					filaPrioridade.add(new NoDijkstra(aresta.getVerticeDestino(), novaDistancia));
+				}
+			}
+		}
+
+		return new DijkstraResultado(menorDistancia, verticeAnterior);
+	}
+
+	public List<Integer> reconstruirCaminho(DijkstraResultado resultado, int origem, int destino) {
+
+		if (origem == destino)
+			return List.of(destino);
+
+		if (!resultado.verticeAnterior.containsKey(origem))
+			return List.of();
+
+		LinkedList<Integer> caminho = new LinkedList<>();
+		Integer atual = origem;
+
+		while (atual != null && atual != destino) {
+			caminho.add(atual);
+			atual = resultado.verticeAnterior.get(atual);
+		}
+
+		caminho.add(destino);
+		return caminho;
+	}
+
+	public List<RotaCalculada> calcularRotasOrdenadas(Grafo grafo, int destino, List<Integer> bases) {
+
+		DijkstraResultado resultadoDijkstra = executarDijkstra(grafo, destino);
+
+		List<RotaCalculada> rotas = new ArrayList<>();
+
+		for (int base : bases) {
+
+			double distanciaBaseParaDestino = resultadoDijkstra.menorDistancia.getOrDefault(base, Double.MAX_VALUE);
+
+			List<Integer> caminhoCompleto = distanciaBaseParaDestino == Double.MAX_VALUE ? List.of()
+					: reconstruirCaminho(resultadoDijkstra, base, destino);
+
+			rotas.add(new RotaCalculada(base, distanciaBaseParaDestino, caminhoCompleto));
+		}
+
+		rotas.sort(Comparator.comparingDouble(r -> r.distanciaTotal));
+
+		return rotas;
+	}
 }
