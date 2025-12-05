@@ -64,12 +64,20 @@ public class FuncionarioService {
     }
 
     @Transactional
-    public void deleteFuncionario(Long id){
-        Objects.requireNonNull(id, "ID não pode ser nulo");
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Funcionário não encontrado para exclusão.");
+    public void deleteFuncionario(Long id) {
+        // 1. Busca o funcionário (se não achar, erro)
+        Funcionario funcionario = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Funcionário não encontrado para exclusão."));
+
+        // Verificamos se a lista de equipes dele NÃO está vazia.
+        // Se ele tiver pelo menos uma equipe, bloqueamos.
+        if (funcionario.getEquipes() != null && !funcionario.getEquipes().isEmpty()) {
+            // Lançamos uma exceção com a mensagem EXATA que você quer que apareça no popup
+            throw new IllegalStateException("Não é permitido excluir o funcionário se ele estiver alocado a uma equipe ativa!");
         }
-        repository.deleteById(id);
+
+        // 3. Se passou, pode deletar
+        repository.delete(funcionario);
     }
 
     public List<Funcionario> findAll(){

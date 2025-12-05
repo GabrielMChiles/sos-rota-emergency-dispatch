@@ -1,5 +1,6 @@
 package com.pi.grafos.view.screens;
 
+import com.pi.grafos.dto.SugestaoDespachoDTO; // Importante: O DTO que criamos
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -8,39 +9,26 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import static com.pi.grafos.view.styles.AppStyles.*;
 
-// EM CONSTRUÇÃO
 public class ModalSelecaoAmbulancia {
 
-    // Classe interna simples para representar os dados na lista (DTO)
-    public static class SugestaoAmbulancia {
-        String placa;
-        String base;
-        String tipo; // UTI ou BASICA
-        double distanciaKm;
-        int tempoMinutos;
-        boolean dentroDoSla;
+    /**
+     * Exibe o modal de seleção.
+     * Agora exige a lista PROCESSADA de sugestões. A View não calcula mais nada.
+     */
+    public void exibir(Stage dono, String bairroOcorrencia, String gravidade, List<SugestaoDespachoDTO> sugestoes) {
 
-        public SugestaoAmbulancia(String placa, String base, String tipo, double distanciaKm, int tempoMinutos, boolean dentroDoSla) {
-            this.placa = placa;
-            this.base = base;
-            this.tipo = tipo;
-            this.distanciaKm = distanciaKm;
-            this.tempoMinutos = tempoMinutos;
-            this.dentroDoSla = dentroDoSla;
-        }
-    }
-
-    public void exibir(Stage dono, String bairroOcorrencia, String gravidade) {
         // Configuração da Janela Modal
         Stage modal = new Stage();
         modal.initOwner(dono);
@@ -51,7 +39,7 @@ public class ModalSelecaoAmbulancia {
         VBox root = new VBox(20);
         root.setPadding(new Insets(30));
         root.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 20, 0, 0, 0); -fx-border-color: #E2E8F0; -fx-border-width: 1; -fx-border-radius: 15;");
-        root.setPrefWidth(500);
+        root.setPrefWidth(550); // Aumentei um pouco a largura
         root.setPrefHeight(600);
 
         // Cabeçalho
@@ -63,22 +51,19 @@ public class ModalSelecaoAmbulancia {
         lblSub.setFont(FONTE_CORPO);
         lblSub.setTextFill(Color.web("#64748B"));
 
-        // --- SIMULAÇÃO DA LÓGICA ---
-        // Aqui chamara o Service: List<Sugestao> lista = service.buscarMelhores(bairro, gravidade);
-        List<SugestaoAmbulancia> listaSugestoes = simularBuscaInteligente(gravidade);
-
+        // Container da Lista
         VBox containerLista = new VBox(10);
 
-        if (listaSugestoes.isEmpty()) {
-            // CENÁRIO: Nenhuma ambulância disponível
+        // Lógica de Renderização (Apenas visual, sem regras de negócio)
+        if (sugestoes == null || sugestoes.isEmpty()) {
             containerLista.getChildren().add(criarAlertaVazio());
         } else {
-            // CENÁRIO: Existem ambulâncias
-            for (SugestaoAmbulancia amb : listaSugestoes) {
-                containerLista.getChildren().add(criarItemLista(amb, modal));
+            for (SugestaoDespachoDTO dto : sugestoes) {
+                containerLista.getChildren().add(criarItemLista(dto, modal));
             }
         }
 
+        // Scroll para a lista
         ScrollPane scroll = new ScrollPane(containerLista);
         scroll.setFitToWidth(true);
         scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
@@ -86,7 +71,7 @@ public class ModalSelecaoAmbulancia {
         VBox.setVgrow(scroll, Priority.ALWAYS);
 
         // Botão Fechar
-        Button btnFechar = new Button("Fechar / Colocar em Espera");
+        Button btnFechar = new Button("Fechar / Cancelar");
         btnFechar.setFont(FONTE_BOTAO2);
         btnFechar.setMaxWidth(Double.MAX_VALUE);
         btnFechar.setPrefHeight(45);
@@ -101,49 +86,70 @@ public class ModalSelecaoAmbulancia {
         modal.setScene(scene);
 
         // Centraliza no pai
-        modal.setX(dono.getX() + (dono.getWidth() - 500) / 2);
-        modal.setY(dono.getY() + (dono.getHeight() - 600) / 2);
+        if (dono != null) {
+            modal.setX(dono.getX() + (dono.getWidth() - root.getPrefWidth()) / 2);
+            modal.setY(dono.getY() + (dono.getHeight() - root.getPrefHeight()) / 2);
+        }
 
         modal.showAndWait();
     }
 
     // --- COMPONENTES VISUAIS ---
 
-    private HBox criarItemLista(SugestaoAmbulancia amb, Stage modal) {
+    private HBox criarItemLista(SugestaoDespachoDTO amb, Stage modal) {
         HBox card = new HBox(15);
         card.setPadding(new Insets(15));
         card.setAlignment(Pos.CENTER_LEFT);
 
-        // Estilo muda se estiver dentro do SLA ou não
-        String bordaColor = amb.dentroDoSla ? "#10B981" : "#EF4444"; // Verde ou Vermelho
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: " + bordaColor + "; -fx-border-radius: 8; -fx-border-width: 1;");
+        // Usa o booleano do DTO que o Service calculou
+        boolean isViable = amb.atendeSLA();
+
+        String bordaColor = isViable ? "#10B981" : "#EF4444"; // Verde ou Vermelho
+        String bgStyle = "-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: " + bordaColor + "; -fx-border-radius: 8; -fx-border-width: 1;";
+
+        card.setStyle(bgStyle);
 
         // Ícone
         Label icon = new Label("🚑");
         icon.setStyle("-fx-font-size: 24px;");
 
-        // Infos
+        // Infos Principais
         VBox info = new VBox(3);
-        Label lblPlaca = new Label(amb.tipo + " - " + amb.placa);
-        lblPlaca.setFont(FONTE_BOTAO2);
-        lblPlaca.setTextFill(COR_AZUL_NOTURNO);
 
-        Label lblBase = new Label("Base: " + amb.base);
+        // Ex: UTI - BRA2E19 (Base: Centro)
+        Label lblTitulo = new Label(amb.tipo() + " - " + amb.placa());
+        lblTitulo.setFont(FONTE_BOTAO2);
+        lblTitulo.setTextFill(COR_AZUL_NOTURNO);
+
+        Label lblBase = new Label("Base de Origem: " + amb.baseOrigem());
         lblBase.setFont(FONTE_PEQUENA);
+        lblBase.setTextFill(Color.web("#64748B"));
 
-        Label lblTempo = new Label(amb.tempoMinutos + " min (" + amb.distanciaKm + " km)");
-        lblTempo.setStyle("-fx-font-weight: bold; -fx-text-fill: " + bordaColor + ";");
+        // Ex: 4 min (3.5 km)
+        Label lblTempo = new Label(amb.tempoMinutos() + " min (" + String.format("%.1f", amb.distanciaKm()) + " km)");
+        lblTempo.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: " + bordaColor + ";");
 
-        info.getChildren().addAll(lblPlaca, lblBase, lblTempo);
+        info.getChildren().addAll(lblTitulo, lblBase, lblTempo);
         HBox.setHgrow(info, Priority.ALWAYS);
 
         // Botão Selecionar
         Button btnSelect = new Button("DESPACHAR");
+        btnSelect.setPrefWidth(100);
         btnSelect.setStyle("-fx-background-color: " + bordaColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;");
+
         btnSelect.setOnAction(e -> {
-            System.out.println("Despachando ambulância: " + amb.placa);
+            // AQUI É O MOMENTO DECISIVO
+            // Em uma arquitetura real, você retornaria o DTO selecionado para quem chamou
+            // ou dispararia um evento. Por enquanto, imprimimos o log.
+            System.out.println(">>> DESPACHO CONFIRMADO <<<");
+            System.out.println("Ambulância ID: " + amb.idAmbulancia());
+            System.out.println("Placa: " + amb.placa());
+            System.out.println("Tempo Est.: " + amb.tempoMinutos() + " min");
+
             modal.close();
-            // TODO: Chamar método de salvar no banco e mudar status
+
+            // TODO: Aqui você deve chamar o Controller para efetivar o INSERT na tabela de Atendimentos
+            // Ex: despachoController.registrarDespacho(amb.idAmbulancia(), ocorrenciaId);
         });
 
         card.getChildren().addAll(icon, info, btnSelect);
@@ -151,42 +157,37 @@ public class ModalSelecaoAmbulancia {
     }
 
     private VBox criarAlertaVazio() {
-        VBox box = new VBox(10);
+        VBox box = new VBox(15); // Aumentei espaçamento
         box.setAlignment(Pos.CENTER);
-        box.setPadding(new Insets(30));
-        box.setStyle("-fx-background-color: #FEF2F2; -fx-background-radius: 8; -fx-border-color: #FECACA; -fx-border-radius: 8;"); // Vermelho claro
+        box.setPadding(new Insets(40));
+        // Fundo Rosa Claro com Borda Vermelha Suave
+        box.setStyle("-fx-background-color: #FEF2F2; -fx-background-radius: 10; -fx-border-color: #FECACA; -fx-border-radius: 10; -fx-border-width: 1.5;");
 
-        Label lblIcon = new Label("⚠️");
-        lblIcon.setStyle("-fx-font-size: 30px;");
+        // 1. Ícone Emoji (Resolvido com TextFlow)
+        Text txtIcon = new Text("⚠️");
+        txtIcon.setFont(Font.font("Segoe UI Emoji", 40)); // Fonte nativa do Windows
+        txtIcon.setFill(Color.web("#EF4444")); // Vermelho alerta
+        TextFlow flowIcon = new TextFlow(txtIcon);
+        flowIcon.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
-        Label lblMsg = new Label("Nenhuma ambulância disponível no momento.");
-        lblMsg.setFont(FONTE_BOTAO2);
-        lblMsg.setTextFill(COR_VERMELHO_RESGATE);
+        // 2. Título
+        Label lblMsg = new Label("Nenhuma ambulância disponível ou apta.");
+        lblMsg.setFont(Font.font("Poppins", FontWeight.BOLD, 16)); // Negrito e maior
+        lblMsg.setTextFill(COR_AZUL_NOTURNO); // Vermelho Escuro (Legível)
+        lblMsg.setWrapText(true);
+        lblMsg.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
-        Label lblSugestao = new Label("A ocorrência será salva como 'PENDENTE' na fila de espera.");
+        // 3. Sugestão (Texto Descritivo)
+        Label lblSugestao = new Label("Verifique se há equipes completas cadastradas ou se o SLA permite o deslocamento.");
+        lblSugestao.setFont(Font.font("Poppins", FontWeight.NORMAL, 14));
+        // CORREÇÃO DE LEGIBILIDADE: Usando uma cor escura, não clara
+        lblSugestao.setTextFill(Color.web("#7F1D1D")); // Vermelho escuro quase marrom (Alto contraste)
         lblSugestao.setWrapText(true);
+        lblSugestao.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        // Limita a largura para o texto não ficar esticado demais
+        lblSugestao.setMaxWidth(400);
 
-        box.getChildren().addAll(lblIcon, lblMsg, lblSugestao);
+        box.getChildren().addAll(flowIcon, lblMsg, lblSugestao);
         return box;
-    }
-
-    // --- SIMULAÇÃO ---
-    private List<SugestaoAmbulancia> simularBuscaInteligente(String gravidade) {
-        List<SugestaoAmbulancia> lista = new ArrayList<>();
-
-        // Regra do PDF: Alta = 8 min. Média = 15 min.
-        int slaMax = gravidade.equals("ALTA") ? 8 : 15;
-
-        // Simulando dados que viriam do Dijkstra
-        // Adicionei uma longe (12km) para testar o visual vermelho
-        lista.add(new SugestaoAmbulancia("ABC-1234", "Centro", "UTI", 3.5, 4, 4 <= slaMax));
-        lista.add(new SugestaoAmbulancia("XYZ-9876", "Jardim América", "UTI", 5.0, 5, 5 <= slaMax));
-        lista.add(new SugestaoAmbulancia("DEF-5678", "Vila Nova", "BÁSICA", 12.0, 12, 12 <= slaMax));
-
-        // Ordena por tempo (Menor para o Maior)
-        lista.sort(Comparator.comparingInt(a -> a.tempoMinutos));
-
-        return lista;
-        // Retorne "new ArrayList<>()" para testar a tela vazia
     }
 }
