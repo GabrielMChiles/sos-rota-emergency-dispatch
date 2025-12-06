@@ -1,39 +1,35 @@
 package com.pi.grafos.model;
 
+import com.pi.grafos.model.enums.OcorrenciaGravidade;
 import com.pi.grafos.model.enums.OcorrenciaStatus;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ocorrencias")
-@Getter
-@Setter
+@Data
 public class Ocorrencia {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idOcorrencia;
 
-    private String descricao;
+    private String descricao; // Campo observações
 
     @ManyToOne
-    @JoinColumn(name = "idLocal")
+    @JoinColumn(name = "id_local")
     private Localizacao local;
 
     @ManyToOne
-    @JoinColumn(name = "idTipoOcorrencia")
-    private TipoOcorrencia tipoOcorrencia;
+    @JoinColumn(name = "id_tipo_ocorrencia")
+    private TipoOcorrencia tipoOcorrencia; // Ex: Acidente, Mal Súbito
 
     @Enumerated(EnumType.STRING)
-    private OcorrenciaStatus gravidade;
+    private OcorrenciaGravidade gravidade;
+
+    @Enumerated(EnumType.STRING)
+    private OcorrenciaStatus status;
+
+    private LocalDateTime dataAbertura;
 }

@@ -1,9 +1,11 @@
 package com.pi.grafos.model.enums;
 
 public enum OcorrenciaStatus {
-    ALTA("Alta"),
-    MEDIA("Média"),
-    BAIXA("Baixa");
+    ABERTA("Aberta"),
+    DESPACHADA("Despachada"),
+    EM_ATENDIMENTO("Em Atendimento"),
+    CONCLUIDA("Concluída"),
+    CANCELADA("Cancelada");
 
     private final String descricao;
 
